@@ -1,0 +1,13 @@
+# Dependencies
+node_modules
+bun.lock
+.agents/**/*.log
+
+# Python
+__pycache__/
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.env

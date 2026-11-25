@@ -2,6 +2,7 @@
 // Self-contained CLI for jobs.ac.uk: funded UK PhD and MRes/MPhil
 // studentships. No external CLI framework and zero runtime dependencies.
 
+import { runDetail, type DetailOpts } from "./commands/detail.js"
 import { runSearch, type SearchOpts } from "./commands/search.js"
 import { DISCIPLINES, FUNDING, SORTS, TYPES, locationSlug } from "./facets.js"
 
@@ -155,6 +156,14 @@ async function main(): Promise<number> {
       opts[key] = v
     }
     return runSearch(opts)
+  }
+
+  if (cmd === "detail") {
+    const id = (flags._ as string[])[1]
+    if (!id) return fail("detail requires an <id|url>", "NO_ID")
+    const fmt = flags.format !== undefined ? String(flags.format) : "json"
+    if (!["json", "plain"].includes(fmt)) return fail(`--format must be one of json|plain, got "${fmt}"`)
+    return runDetail({ id, format: fmt as DetailOpts["format"] })
   }
 
   return fail(`Unknown command "${cmd}"`, "BAD_CMD")

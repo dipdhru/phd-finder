@@ -1,0 +1,20 @@
+{
+  "name": "jobs-ac-uk-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching funded UK PhD and MRes/MPhil studentships on jobs.ac.uk from its public HTML pages — zero runtime dependencies.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "jobs-ac-uk-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "1.3.14"
+  }
+}

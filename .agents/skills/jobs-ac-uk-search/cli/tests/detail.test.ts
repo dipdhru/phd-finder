@@ -50,6 +50,35 @@ describe("signals and dates", () => {
     expect(s.eligibility).toEqual(expect.arrayContaining(["international students eligible", "home fees only"]));
   });
 
+  test("a negated international-eligibility sentence is not read as eligible", () => {
+    for (const text of ["International students are not eligible for this studentship.", "International applicants are not eligible to apply."]) {
+      const s = fundingSignals(text);
+      expect(s.eligibility).toContain("international students not eligible");
+      expect(s.eligibility).not.toContain("international students eligible");
+    }
+  });
+
+  test("home-rate fees with the international difference covered or waived are not 'home fees only'", () => {
+    for (const text of [
+      "Home fees and international fees are both covered.",
+      "UKRI funding covers fees at the home rate; the University will waive the difference for international students.",
+    ]) {
+      expect(fundingSignals(text).eligibility).not.toContain("home fees only");
+    }
+  });
+
+  test("other home-rate phrasings are caught as 'home fees only'", () => {
+    for (const text of [
+      "The award covers UK home tuition fees and a stipend.",
+      "Includes home-rate fees.",
+      "Tuition fees at the UK rate only.",
+      // Welcoming international students is not a fee waiver.
+      "International students are welcome; fees are paid at the home rate.",
+    ]) {
+      expect(fundingSignals(text).eligibility).toContain("home fees only");
+    }
+  });
+
   test("parseUkDate handles ordinals and split ordinals", () => {
     expect(parseUkDate("19th November 2026")).toBe("2026-11-19");
     expect(parseUkDate("1 st October 2027")).toBe("2027-10-01");

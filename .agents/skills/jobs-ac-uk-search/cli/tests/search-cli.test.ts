@@ -119,6 +119,26 @@ describe("search failures", () => {
   });
 });
 
+describe("unreadable results pages", () => {
+  test("a 200 page with no cards and no count exits 1 with PARSE_FAILED", async () => {
+    const { result } = await runWithServer(["search"], () => html("<html><body>maintenance</body></html>"));
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe("");
+    expect(err(result.stderr).code).toBe("PARSE_FAILED");
+  });
+
+  test("a count above zero with no readable cards exits 1 with PARSE_FAILED", async () => {
+    const { result } = await runWithServer(["search"], () => html('<strong class="job-count">5</strong> PhDs Found'));
+    expect(result.exitCode).toBe(1);
+    expect(err(result.stderr).code).toBe("PARSE_FAILED");
+  });
+
+  test("a genuine empty result (count 0) is a normal empty answer", async () => {
+    const { result } = await runWithServer(["search"], () => html('<strong class="job-count">0</strong> PhDs Found'));
+    expect(parseJSON<Out>(result).results).toEqual([]);
+  });
+});
+
 describe("search output", () => {
   test("table and plain formats render the first card's id and title", async () => {
     const body = await page();

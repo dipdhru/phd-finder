@@ -59,16 +59,32 @@ const ELIGIBILITY: [RegExp, string][] = [
   [/\b(EU|UK|EEA) (nationals?|citizens?)\b/i, "nationality restriction"],
   [/\bany nationality\b/i, "any nationality"],
   [/\bwithout a (PhD|doctorate)\b|\bnot (yet )?(been awarded|hold) a (PhD|doctoral)/i, "must not hold a PhD"],
-  // Fees paid at the home rate leave an international student owing the difference.
-  [/\bUK Home only\b|\bhome (fees?|rate)\b|\bfees at the (UK )?home rate\b/i, "home fees only"],
+  // Fees paid at the home rate leave an international student owing the difference
+  // (unless the advert covers it: see FEE_DIFFERENCE_COVERED).
+  [/\bUK Home only\b|\bhome[- ](tuition )?(fees?|rate)\b|\bfees at the (UK )?home rate\b|\b(fees|tuition) at the UK rate\b/i, "home fees only"],
   [/\bUK (Home )?students only\b/i, "UK students only"],
+  [/\binternational (students|applicants)\b[^.]{0,30}\b(not|ineligible|unable)\b/i, "international students not eligible"],
   [/\binternational (students|applicants)\b[^.]{0,30}\b(eligible|welcome|may apply|can apply)\b/i, "international students eligible"],
 ]
+
+/**
+ * The international fee, or the home/international difference, is covered or
+ * waived. Kept narrow on purpose: "international students welcome; fees paid at
+ * the home rate" must still read as home fees only.
+ */
+const FEE_DIFFERENCE_COVERED =
+  /\binternational (tuition )?fees?\b[^.]{0,40}\b(waived|covered|paid)\b|\b(waive[sd]?|cover(s|ed)?|pa(y|id))\b[^.]{0,40}\bdifference\b|\bdifference\b[^.]{0,40}\b(waived|covered|paid)\b/i
 
 /** Phrases that hint at funding and eligibility. Hints for ranking, not a verdict. */
 export function fundingSignals(text: string): FundingSignals {
   const hits = (rules: [RegExp, string][]) => rules.filter(([re]) => re.test(text)).map(([, label]) => label)
-  return { funded: hits(FUNDED), unfunded: hits(UNFUNDED), eligibility: hits(ELIGIBILITY) }
+  let eligibility = hits(ELIGIBILITY)
+  // "International students are not eligible" also matches the positive rule.
+  if (eligibility.includes("international students not eligible")) {
+    eligibility = eligibility.filter((l) => l !== "international students eligible")
+  }
+  if (FEE_DIFFERENCE_COVERED.test(text)) eligibility = eligibility.filter((l) => l !== "home fees only")
+  return { funded: hits(FUNDED), unfunded: hits(UNFUNDED), eligibility }
 }
 
 const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]

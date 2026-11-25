@@ -57,6 +57,13 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
         const html = await htmlFetch(searchUrl({ ...opts, types: [type] }, (page - 1) * PAGE_SIZE + 1))
         if (html === null) break
         const parsed = parseSearchPage(html, today)
+        // A results page with no cards must say so with a count of 0 (or the
+        // scan must have started past the end). Anything else - a holding page,
+        // a changed layout - would otherwise read as "no studentships".
+        if (page === opts.page && parsed.cards.length === 0) {
+          const pastEnd = parsed.total !== null && (opts.page - 1) * PAGE_SIZE >= parsed.total
+          if (!pastEnd) throw new ParseError("results page has no readable adverts - jobs.ac.uk may be down or its layout may have changed")
+        }
         typeTotal = parsed.total ?? typeTotal
         scanned++
         for (const c of parsed.cards) {
@@ -84,7 +91,9 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
     }
     return 0
   } catch (e) {
-    writeError(e instanceof Error ? e.message : String(e), "SEARCH_FAILED")
+    writeError(e instanceof Error ? e.message : String(e), e instanceof ParseError ? "PARSE_FAILED" : "SEARCH_FAILED")
     return 1
   }
 }
+
+class ParseError extends Error {}

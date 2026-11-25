@@ -59,7 +59,9 @@ export async function runDetail(opts: DetailOpts): Promise<number> {
         c.fundingAmount ? `Funding amount: ${c.fundingAmount}` : "",
         `Funding hints: ${s.funded.join(", ") || "none"}${s.unfunded.length ? ` | warnings: ${s.unfunded.join(", ")}` : ""}`,
         s.eligibility.length ? `Eligibility hints: ${s.eligibility.join(", ")}` : "",
-        homeFees ? "WARNING: home fees only - an international student may owe the international fee difference." : "",
+        homeFees
+          ? "CHECK FEES: the advert mentions home-rate fees and no waiver of the international difference - an international student may owe that difference."
+          : "",
         c.date ? `Posted: ${c.date}` : "",
         c.deadline ? `Closes: ${c.deadline}` : "",
         c.startDate ? `Starts: ${c.startDate}` : "",

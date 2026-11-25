@@ -68,13 +68,20 @@ Takes an advert id such as `DTS352`, or its jobs.ac.uk URL. Returns the full adv
 
 - `funded`: e.g. `studentship`, `stipend`, `UKRI rate`, `tax-free stipend`, `living allowance`, `tuition covered`, `MSCA`.
 - `unfunded`: e.g. `self-funded`, `own funding required`, `tuition fees apply`.
-- `eligibility`: e.g. `home fees only`, `UK students only`, `international students eligible`, `home-fee status`, `nationality restriction`.
+- `eligibility`: e.g. `home fees only`, `UK students only`, `international students eligible`, `international students not eligible`, `home-fee status`, `nationality restriction`.
 
 **`home fees only` matters most for an international applicant.** Many UK studentships pay
 tuition only at the UK "home" rate. An international student would then owe the difference
 to the international fee, which is often over £20,000 a year. `--funding international`
 does not remove these adverts: an advert can be open to international students and still
-cover home fees only. `detail --format plain` prints a warning line when it finds the phrase.
+cover home fees only.
+
+The hint fires on any mention of home-rate fees, such as "UK Home only", "home fees" or
+"fees at the home rate". It is dropped when the advert also says the international fee, or
+the difference, is covered or waived. `detail --format plain` then prints a `CHECK FEES`
+line. Read the advert's funding section to confirm. The `fundingFor` field ("UK Students",
+"International Students") is set by the site, so it is the more reliable signal of who the
+funding is open to.
 
 These are **hints for ranking, not a verdict**. Read the advert's funding and eligibility
 sections before telling the user a place is funded or that they are eligible.
@@ -120,6 +127,9 @@ Search cards show day and month only, so the year is inferred: placed dates are 
 future, and closing dates are on or after the placed date. Errors go to stderr as
 `{ "error", "code" }` and the CLI exits with code 1. The codes are `BAD_ARG`,
 `UNKNOWN_FLAG`, `SEARCH_FAILED`, `BAD_ID`, `NOT_FOUND`, `PARSE_FAILED` and `DETAIL_FAILED`.
+`PARSE_FAILED` from `search` means a results page had no readable adverts and no count of
+0: the site may be showing a holding page, or its layout may have changed. It never means
+"no studentships".
 
 ## Notes
 

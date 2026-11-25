@@ -56,6 +56,17 @@ function after(html: string, marker: RegExp): string | null {
   return text || null
 }
 
+/**
+ * The <b> inside the employer block. Matching up to the block's </div> instead
+ * would stop at the first </div> of any markup nested in the name.
+ */
+function employer(chunk: string): string | null {
+  const at = chunk.indexOf('class="j-search-result__employer')
+  const m = at < 0 ? null : chunk.slice(at).match(/<b>([\s\S]*?)<\/b>/)
+  const text = m ? clean(m[1]) : ""
+  return text || null
+}
+
 export function parseCard(chunk: string, today: Date): JobCard | null {
   const link = chunk.match(/<a[^>]*href="\/job\/([A-Za-z0-9]+)\/[^"]*"[^>]*>([\s\S]*?)<\/a>/)
   if (!link) return null
@@ -67,7 +78,7 @@ export function parseCard(chunk: string, today: Date): JobCard | null {
   return {
     id,
     title: clean(link[2]),
-    company: byClass(chunk, "j-search-result__employer"),
+    company: employer(chunk),
     department: byClass(chunk, "j-search-result__department"),
     location: after(chunk, /<div>\s*Location:/),
     country: null,

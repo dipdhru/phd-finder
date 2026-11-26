@@ -54,7 +54,10 @@ export async function runDetail(opts: DetailOpts): Promise<number> {
         s.ielts ? `IELTS ${s.ielts}` : "",
         s.toefl ? `TOEFL iBT ${s.toefl}` : "",
       ].filter(Boolean)
-      const german = s.germanRequired === false ? "not required" : s.germanRequired ? `level ${s.germanRequired}` : "unclear - check the text"
+      const german =
+        s.germanRequired === false ? "not required" : s.germanRequired ? `level ${s.germanRequired}` : d.germanSkills ? "see text below" : "not stated"
+      const englishHint = english.length ? english.join(", ") : d.englishSkills ? "see text below" : "not stated"
+      const indent = (text: string) => text.split("\n").map((l) => `    ${l}`).join("\n")
       const lines = [
         d.title,
         `${d.company || "—"} · ${d.location || "—"}`,
@@ -67,9 +70,12 @@ export async function runDetail(opts: DetailOpts): Promise<number> {
         "",
         "REQUIREMENTS TO CHECK (hints, not an admission decision)",
         `  Bachelor's subject: ${s.bachelorSubject ?? "not stated in a standard form - read the admission text"}`,
-        `  English: ${english.length ? english.join(", ") : "not stated"}`,
+        `  English: ${englishHint}`,
         `  German: ${german}`,
         s.uniAssist ? "  Application via uni-assist" : "",
+        // The source text, so every hint above can be checked.
+        d.englishSkills ? `  English section:\n${indent(d.englishSkills)}` : "",
+        d.germanSkills ? `  German section:\n${indent(d.germanSkills)}` : "",
         "",
         d.applicationPeriods ? `Application periods: ${d.applicationPeriods}` : "",
         d.tuitionFees ? `Tuition fees per semester: ${d.tuitionFees}` : "",

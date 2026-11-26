@@ -32,9 +32,12 @@ const DATE = new RegExp(`\\b(\\d{1,2})\\s+(${MONTHS.join("|")})\\s+(\\d{4})\\b`,
 const isoDay = (d: Date) => d.toISOString().slice(0, 10)
 
 /**
- * The first "D Month YYYY" date in DAAD's deadline text, and whether it is
- * still open. "+ N more" means further dates DAAD doesn't show in the list, so
- * the programme may still be open even when the first date has passed.
+ * The deadline in DAAD's text, and whether it is still open. The text can hold
+ * several dates, including the opening date of an application window ("from 1
+ * November 2026 to 28 February 2027"), so the reported date is the earliest one
+ * still ahead, or the last one when all have passed. "+ N more" means further
+ * dates DAAD doesn't show in the list, so the programme may still be open even
+ * when every listed date has passed.
  */
 export function parseDeadline(text: string | null, today: Date): { deadline: string | null; status: DeadlineStatus } {
   if (!text) return { deadline: null, status: "unknown" }
@@ -49,7 +52,9 @@ export function parseDeadline(text: string | null, today: Date): { deadline: str
   if (dates.length === 0) return { deadline: null, status: "unknown" }
   const now = isoDay(today)
   const more = /\+\s*\d+\s+more\b/i.test(text)
-  return { deadline: dates[0], status: more || dates.some((d) => d >= now) ? "open" : "past" }
+  const ahead = dates.filter((d) => d >= now).sort()
+  const deadline = ahead.length ? ahead[0] : [...dates].sort().at(-1)!
+  return { deadline, status: more || ahead.length ? "open" : "past" }
 }
 
 export function isFree(tuitionFees: string | null): boolean {
@@ -83,7 +88,11 @@ export function mapCourse(course: Record<string, unknown>, today: Date): Program
   }
 }
 
-export function parseSearchResponse(body: string, today: Date): { programmes: Programme[]; total: number } {
+/**
+ * `count` is the number of raw courses on the page, which is what paging
+ * compares against the page size: a course that fails to map must not end the scan.
+ */
+export function parseSearchResponse(body: string, today: Date): { programmes: Programme[]; total: number; count: number } {
   let data: unknown
   try {
     data = JSON.parse(body)
@@ -95,6 +104,11 @@ export function parseSearchResponse(body: string, today: Date): { programmes: Pr
   const programmes = courses
     .map((c) => (c && typeof c === "object" ? mapCourse(c as Record<string, unknown>, today) : null))
     .filter((p): p is Programme => p !== null)
+  // Courses present but none readable: the API's field names changed. Saying
+  // "no programmes" here would hide every option.
+  if (courses.length > 0 && programmes.length === 0) {
+    throw new ParseError("DAAD search returned courses in an unknown shape - the API may have changed")
+  }
   const n = (data as { numResults?: unknown }).numResults
-  return { programmes, total: typeof n === "number" ? n : programmes.length }
+  return { programmes, total: typeof n === "number" ? n : programmes.length, count: courses.length }
 }

@@ -138,3 +138,15 @@ describe("search output and flags", () => {
     expect(err(r.stderr).code).toBe("UNKNOWN_FLAG");
   });
 });
+
+describe("review fixes: paging on the raw page size", () => {
+  test("one unmappable course on a full page does not stop paging", async () => {
+    const p1 = JSON.parse(await fixture("search-p1.json"));
+    delete p1.courses[0].courseName;
+    const p2 = await fixture("search-p2.json");
+    const { requests } = await runWithServer(["search", "--pages", "5", "--fees", "any"], (url) =>
+      json(url.searchParams.get("offset") === "100" ? p2 : p1),
+    );
+    expect(requests).toHaveLength(2);
+  });
+});

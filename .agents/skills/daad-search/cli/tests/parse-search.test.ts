@@ -61,3 +61,26 @@ describe("parseSearchResponse", () => {
     expect(() => parseSearchResponse('{"numResults":3}', today)).toThrow(ParseError);
   });
 });
+
+describe("review fixes: search parsing", () => {
+  test("an application window reports its closing date, not its opening date", () => {
+    expect(parseDeadline("Applications are possible from 1 November 2026 to 28 February 2027.", today)).toEqual({ deadline: "2027-02-28", status: "open" });
+  });
+
+  test("when every date has passed, the last one is reported", () => {
+    expect(parseDeadline("1 May 2026 (first round) and 15 July 2026 (second round)", today)).toEqual({ deadline: "2026-07-15", status: "past" });
+  });
+
+  test("courses that all fail to map are a ParseError, not an empty result", () => {
+    const body = JSON.stringify({ numResults: 2, courses: [{ name: "A" }, { name: "B" }] });
+    expect(() => parseSearchResponse(body, today)).toThrow(ParseError);
+  });
+
+  test("the raw course count is returned for paging", async () => {
+    const data = JSON.parse(await fixture("search-p1.json"));
+    delete data.courses[0].courseName;
+    const r = parseSearchResponse(JSON.stringify(data), today);
+    expect(r.programmes).toHaveLength(99);
+    expect(r.count).toBe(100);
+  });
+});

@@ -70,7 +70,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
         if (keep(p, opts)) results.push(p)
       }
       if (opts.limit !== undefined && results.length >= opts.limit) break
-      if (parsed.programmes.length < PAGE_SIZE || offset + PAGE_SIZE >= total) break
+      if (parsed.count < PAGE_SIZE || offset + PAGE_SIZE >= total) break
     }
     // Everything is collected before anything is written, so a failed page
     // leaves stdout empty rather than holding half a result.

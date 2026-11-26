@@ -41,7 +41,7 @@ bun run .agents/skills/daad-search/cli/src/cli.ts search [flags]
 
 - `--query`/`-q <text>`: keywords, e.g. `"data science"`, `health`, `bioinformatics`.
 - `--city <list>`: comma-separated city names (matched case-insensitively), replacing the default list. Cities outside the list are passed as typed, e.g. `--city Leipzig`.
-- `--fees free|any`: `free` (default) keeps only programmes DAAD marks "No tuition fees". `any` also shows fee-paying programmes, which are mostly at private universities.
+- `--fees free|any`: `free` (default) keeps only programmes DAAD marks "No tuition fees". `any` also shows "Tuition varies" and fee amounts. These are **not all private**: on 2026-11-26, 38 of the 85 hidden programmes were at public institutions (TU Berlin, HU, HWR, HTW, Potsdam, Viadrina, BTU, Charité, Wildau and others), and 6 of the 31 "Tuition varies" ones were at public universities. When the free list is thin, run `--fees any` and check "Tuition varies" rows at public universities with `detail`, which shows the real per-semester fee.
 - `--start winter|summer|any`: start semester. Default `any`.
 - `--open-only`: drop programmes whose listed deadline has passed.
 - `--pages <n>`: result pages to scan (1-5, 100 programmes each, default 2). `--limit`/`-n <n>`, `--format json|table|plain`.
@@ -136,6 +136,6 @@ expected data. It never means "no programmes".
 ## Notes
 
 - **Coverage is DAAD's international selection only.** Some English-taught master's at TU Berlin, FU, HU or other universities may not be listed, and German-taught programmes are out of scope. Check the universities' own programme pages too.
-- "Tuition varies" and amounts such as "9,950" are fee-paying programmes, often at private universities.
+- "Tuition varies" doesn't always mean fee-paying for this applicant, and some public programmes charge fees (often executive or MBA courses). Use `detail` to see the real fee before ruling a programme out.
 - Programme text is university-supplied HTML. It is run through the hidden-markup and invisible-character filters before output.
 - Endpoint notes and parsing anchors are in `url-reference.md`.

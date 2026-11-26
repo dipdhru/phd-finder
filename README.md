@@ -15,7 +15,7 @@ zero runtime dependencies. It is kept as its own project for now.
 |-------|----------|--------|
 | [`euraxess-search`](.agents/skills/euraxess-search/SKILL.md) | EURAXESS: EU-wide research jobs, incl. MSCA doctoral networks | ✅ working |
 | [`jobs-ac-uk-search`](.agents/skills/jobs-ac-uk-search/SKILL.md) | jobs.ac.uk: UK funded PhD and MRes/MPhil studentships, filtered to those open to international students | ✅ working |
-| `daad-search` | Germany: DAAD PhD database, graduate schools | planned |
+| [`daad-search`](.agents/skills/daad-search/SKILL.md) | DAAD International Programmes: English-taught master's in Berlin and Brandenburg, tuition-free by default (DAAD's PhD programmes not yet covered) | ✅ working |
 | `academics-search` | academics.de (German academic posts) | planned |
 
 ## Quick start
@@ -36,6 +36,9 @@ bun run .agents/skills/euraxess-search/cli/src/cli.ts detail 479677 --format pla
 
 # Funded UK health & medical PhDs open to international students
 bun run .agents/skills/jobs-ac-uk-search/cli/src/cli.ts search --discipline health-and-medical --format table
+
+# Tuition-free English-taught master's in Berlin and Brandenburg about health
+bun run .agents/skills/daad-search/cli/src/cli.ts search -q health --format table
 ```
 
 Or just ask Claude Code in this folder, e.g. "find funded PhD positions in machine learning in Germany".
